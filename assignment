@@ -1,0 +1,214 @@
+import requests
+import os
+
+def connection(token):
+    try:
+        url = 'https://webexapis.com/v1/people/me'
+        headers = {
+            'Authorization' : 'Bearer {}'.format(token)
+        }
+
+        response = requests.get(url, headers = headers)
+        
+        if(response.status_code != 200):
+            print("Invalid token or error occurred. Sorry, please try again")
+        else:
+            print("Connection test to Webex successfully!")
+
+    except:
+        print("An error has been occurred")
+
+def detailsUser(token):
+    try:
+        url = 'https://webexapis.com/v1/people/me'
+        headers = {
+            'Authorization' : 'Bearer {}'.format(token)
+        }
+
+        response = requests.get(url, headers = headers)
+        
+        if(response.status_code != 200):
+            print("Invalid token or error occurred. Sorry, please try again")
+        else:
+            datawebex = response.json()
+            print("")
+            print("Displayed Name : " + datawebex["displayName"])
+            print("Your Nickname : " + datawebex["nickName"])
+            print("Your Email : " + datawebex["emails"][0])
+            
+
+    except:
+        print("An error has been occurred")
+
+def detailsRoom(token):
+    try:
+        url = 'https://webexapis.com/v1/rooms'
+        headers = {
+            'Authorization' : 'Bearer {}'.format(token)
+        }
+
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code != 200:
+            print("Invalid token or error occurred. Sorry, please try again")
+        else:
+            rooms = response.json()['items'][:5] # Get the first 5 rooms
+            for room in rooms:
+                print("\n")
+                print("Room ID : " + room["id"])
+                print("Room Title : " + room["title"])
+                print("Date Created : " + room["created"])
+                print("Last Activity : " + room["lastActivity"])
+
+    except Exception as e:
+        print("An error has occurred:", e)
+
+def roomCreated(token):
+    try:
+        url = 'https://webexapis.com/v1/rooms'
+        headers = {
+            'Authorization' : 'Bearer {}'.format(token),
+            'Content-Type': 'application/json'
+        }
+
+        print("Enter Your Room Name :")
+        roomname = input()
+
+        params = { 'title' : roomname }
+        response = requests.post(url, headers = headers, json=params)
+        
+        if(response.status_code != 200):
+            print("Invalid token or error occurred. Sorry, please try again")
+        else:
+            print("Room Has Been Successfully Created !")
+    except:
+        print("An error has been occurred")
+
+import requests
+
+def messageSend(token):
+    try:
+        url = 'https://webexapis.com/v1/rooms'
+        headers = {
+            'Authorization': 'Bearer {}'.format(token)
+        }
+
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code != 200:
+            print("Invalid token or error occurred. Please try again")
+            return
+        
+        rooms = response.json()['items'][:5] # Get the first 5 rooms
+
+        print("Rooms:")
+        for i, room in enumerate(rooms, 1):
+            print("")
+            print("Room", i)
+            print("Room ID:", room["id"])
+            print("Room Title:", room["title"])
+            print("Date Created:", room["created"])
+            print("Last Activity:", room["lastActivity"])
+
+        print("Choose Your Room by the NUMBER to Send Message")
+        room_number_choice = int(input())  # Get user's room choice
+        if room_number_choice < 1 or room_number_choice > len(rooms):
+            print("Invalid room number")
+            return
+
+        print("Enter The Message Below")
+        message = input()
+
+        room_id = rooms[room_number_choice - 1]["id"]
+
+        url = 'https://webexapis.com/v1/messages'
+
+        headers = {
+            'Authorization': 'Bearer {}'.format(token),
+            'Content-Type': 'application/json'
+        }
+
+        params = {'roomId': room_id, 'text': message}
+        response2 = requests.post(url, headers=headers, json=params)
+
+        response2.raise_for_status()
+
+        if response2.status_code != 200:
+            print("Invalid token or error occurred. Sorry, Please try again.")
+            print(response2.json())
+        else:
+            print("Successfully Sent The Message")
+
+    except Exception as e:
+        print("An error occurred:", e)
+
+# Example usage
+token = 'your_token_here'
+messageSend(token)
+        
+
+# menu button
+print("\t\tWEBEX ")
+print("\n")
+try:
+    #Prompt the user to provide their authentication token and validate it.
+    token = ""
+    
+    while True:
+        print("Please enter your Access Token : ")
+        token = input()
+
+        # URL for token validation
+        url = 'https://webexapis.com/v1/people/me'
+        headers = {
+            'Authorization' : 'Bearer {}'.format(token)
+        }
+
+        response = requests.get(url, headers = headers)
+
+        if(response.status_code == 200):
+            break
+        else:
+            print("An invalid token or error has been occurred. Sorry, please try again")
+            print("")
+    
+    while True:
+        print("\n")
+
+        #Display the menu options and handle user's choice.
+        print("Please required to choose one :")
+        print("SELECTION 0 ( Test connection to the Webex )")
+        print("SELECTION 1 ( User Information )")
+        print("SELECTION 2 ( The List Room )")
+        print("SELECTION 3 ( The Create Room )")
+        print("SELECTION 4 ( Send Message )")
+        print("SELECTION 5 ( Exit Room )")
+        
+        chooseoption = int(input(">>: "))
+
+        #option 0
+        if(chooseoption == 0):
+            connection(token)
+
+        #option 1
+        if(chooseoption == 1):
+            detailsUser(token)
+
+        #option 2
+        if(chooseoption == 2):
+            detailsRoom(token)
+
+        #option 3
+        if(chooseoption == 3):
+            roomCreated(token)
+
+        #option 4
+        if(chooseoption == 4):
+            messageSend(token)
+
+        #option 5
+        if(chooseoption == 5):
+            os._exit(0)
+
+except:
+    print("Error occurred")
